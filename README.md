@@ -1,4 +1,4 @@
-# brew
+# Brew install
 
 Install formula with brew
 
