@@ -34,7 +34,7 @@ workflows:
           file if you would not specify another value.
         run_if: true
         inputs:
-        - packages: 
+        - packages: go
         - arguments: "-v"
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
