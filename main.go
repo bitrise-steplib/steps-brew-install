@@ -48,12 +48,14 @@ func main() {
 
 	fmt.Println()
 	configs.print()
+	fmt.Println()
 
 	if err := configs.validate(); err != nil {
 		log.Errorf("Issue with input: %s", err)
 		os.Exit(1)
 	}
 
+	log.Infof("$ brew %s", command.PrintableCommandArgs(false, []string{"update"}))
 	if err := command.RunCommand("brew", "update"); err != nil {
 		log.Errorf("Can't update brew: %s", err)
 		os.Exit(1)
@@ -76,6 +78,8 @@ func main() {
 	packages := strings.Split(configs.Packages, " ")
 	cmdArgs = append(cmdArgs, packages...)
 
+	fmt.Println()
+	log.Infof("$ brew %s", command.PrintableCommandArgs(false, cmdArgs))
 	if err := command.RunCommand("brew", cmdArgs...); err != nil {
 		log.Errorf("Can't install formulas:  %s", err)
 		os.Exit(1)
