@@ -25,10 +25,7 @@ inputs:
     opts:
       title: "Name of the formula to install/upgrade"
       summary: "Name of the formula to install/upgrade"
-      description: |
-        Description of this input.
-
-        Can be Markdown formatted text.
+      description: "Name of the formula to install/upgrade"
       is_expand: true
       is_required: true
       value_options: []
@@ -39,7 +36,7 @@ inputs:
       description: |
         Flags to pass to the bew install/reinstall command.
 
-        brew install/reinstall [options] [packages]
+        `brew install/reinstall [options] [packages]`
       is_expand: true
       is_required: false
       value_options: []
@@ -48,9 +45,9 @@ inputs:
       title: "Upgrade formula if previously installed"
       summary: "Upgrade formula if previously installed"
       description: |
-        If set the step will upgrade the defined packages by calling brew reinstall [options] [packages] command.
+        If set the step will upgrade the defined packages by calling `brew reinstall [options] [packages]` command.
 
-        Otherwise the step calls brew install [options] [packages]
+        Otherwise the step calls `brew install [options] [packages]`
       is_expand: true
       is_required: false
       value_options:
