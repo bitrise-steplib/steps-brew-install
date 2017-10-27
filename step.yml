@@ -23,8 +23,8 @@ toolkit:
 inputs:
   - packages:
     opts:
-      title: "Name of the formula"
-      summary: "Name of the formula"
+      title: "Name of the formula to install/upgrade"
+      summary: "Name of the formula to install/upgrade"
       description: |
         Description of this input.
 
@@ -32,25 +32,25 @@ inputs:
       is_expand: true
       is_required: true
       value_options: []
-  - arguments:
+  - options:
     opts:
-      title: "Arguments for Brew install"
-      summary:  "Arguments for Brew install"
+      title: "Options for Brew install/upgrade"
+      summary:  "Options for Brew install/upgrade"
       description: |
-        Description of this input.
+        Flags to pass to the bew install/reinstall command.
 
-        Can be Markdown formatted text.
+        brew install/reinstall [options] [packages]
       is_expand: true
       is_required: false
       value_options: []
-  - upgrade: yes
+  - upgrade: "yes"
     opts:
       title: "Upgrade formula if previously installed"
       summary: "Upgrade formula if previously installed"
       description: |
-        Description of this input.
+        If set the step will upgrade the defined packages by calling brew reinstall [options] [packages] command.
 
-        Can be Markdown formatted text.
+        Otherwise the step calls brew install [options] [packages]
       is_expand: true
       is_required: false
       value_options:

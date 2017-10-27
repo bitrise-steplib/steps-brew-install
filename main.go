@@ -13,23 +13,23 @@ import (
 
 // ConfigsModel ...
 type ConfigsModel struct {
-	Packages  string
-	Arguments string
-	Upgrade   string
+	Packages string
+	Options  string
+	Upgrade  string
 }
 
 func createConfigsModelFromEnvs() ConfigsModel {
 	return ConfigsModel{
-		Packages:  os.Getenv("packages"),
-		Arguments: os.Getenv("arguments"),
-		Upgrade:   os.Getenv("upgrade"),
+		Packages: os.Getenv("packages"),
+		Options:  os.Getenv("options"),
+		Upgrade:  os.Getenv("upgrade"),
 	}
 }
 
 func (configs ConfigsModel) print() {
 	log.Infof("Configs:")
 	log.Printf("- Packages: %s", configs.Packages)
-	log.Printf("- Arguments: %s", configs.Arguments)
+	log.Printf("- Options: %s", configs.Options)
 	log.Printf("- Upgrade: %s", configs.Upgrade)
 }
 
@@ -65,10 +65,10 @@ func main() {
 	} else {
 		cmdArgs = append(cmdArgs, "install")
 	}
-	if configs.Arguments != "" {
-		args, err := shellquote.Split(configs.Arguments)
+	if configs.Options != "" {
+		args, err := shellquote.Split(configs.Options)
 		if err != nil {
-			log.Errorf("Can't split arguments: %s", err)
+			log.Errorf("Can't split options: %s", err)
 			os.Exit(1)
 		}
 		cmdArgs = append(cmdArgs, args...)
