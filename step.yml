@@ -1,0 +1,50 @@
+title: |-
+  brew
+summary: |
+  Install formula with brew
+description: |
+  Install formula with brew
+website: https://github.com/bitrise-steplib/bitrise-step-brew
+source_code_url: https://github.com/bitrise-steplib/bitrise-step-brew
+support_url: https://github.com/bitrise-steplib/bitrise-step-brew/issues
+host_os_tags:
+  - osx-10.10
+type_tags:
+  - installer
+is_requires_admin_user: true
+is_always_run: false
+is_skippable: false
+run_if: ""
+
+deps:
+  brew:
+  - name: git
+  - name: wget
+
+toolkit:
+  go:
+    package_name: github.com/kdobmayer/bitrise-step-brew
+
+inputs:
+  - packages:
+    opts:
+      title: "Name of the formula"
+      summary: "Name of the formula"
+      description: |
+        Description of this input.
+
+        Can be Markdown formatted text.
+      is_expand: true
+      is_required: true
+      value_options: []
+  - arguments:
+    opts:
+      title: "Arguments for Brew install"
+      summary:  "Arguments for Brew install"
+      description: |
+        Description of this input.
+
+        Can be Markdown formatted text.
+      is_expand: true
+      is_required: false
+      value_options: []
