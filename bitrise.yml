@@ -10,6 +10,8 @@ app:
 
 workflows:
   test:
+    before_run:
+    - go-tests
     steps:
     - change-workdir:
         title: Switch working dir to test / _tmp dir
@@ -29,6 +31,60 @@ workflows:
         - packages: "go"
         - options: "-v"
         - upgrade: "yes"
+
+  go-tests:
+    before_run:
+    - _install-test-tools
+    steps:
+    - script:
+        title: Print Go version
+        inputs:
+        - content: go version
+    - script:
+        title: Export go files to test
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -x
+            no_vendor_paths="$(go list ./... | grep -v vendor)"
+            envman add --key GOLIST --value "$no_vendor_paths"
+    - script:
+        title: Checking for unchecked errors
+        inputs:
+        - content: errcheck -asserts=true -blank=true $GOLIST
+    - script:
+        title: Run Golint
+        inputs:
+        - content: golint $GOLIST
+    - script:
+        title: Go test
+        inputs:
+        - content: go test $GOLIST
+
+  _install-test-tools:
+    steps:
+    - script:
+        title: Install required tools
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -x
+
+            go get -u -v github.com/kisielk/errcheck
+            go get -u -v github.com/golang/lint/golint
+
+  deps-update:
+    title: Update the locked versions of all dependencies
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/usr/bin/env bash
+            set -x
+
+            go get -u -v github.com/golang/dep/cmd/dep
+            dep ensure -update -v
+
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
   audit-this-step:
