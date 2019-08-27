@@ -11,34 +11,34 @@ import (
 	"github.com/kballard/go-shellquote"
 )
 
-// ConfigsModel ...
-type ConfigsModel struct {
+// configs ...
+type configs struct {
 	Packages string
 	Options  string
 	Upgrade  string
 }
 
-func createConfigsModelFromEnvs() ConfigsModel {
-	return ConfigsModel{
+func createConfigsModelFromEnvs() configs {
+	return configs{
 		Packages: os.Getenv("packages"),
 		Options:  os.Getenv("options"),
 		Upgrade:  os.Getenv("upgrade"),
 	}
 }
 
-func (configs ConfigsModel) print() {
+func (c configs) print() {
 	log.Infof("Configs:")
-	log.Printf("- Packages: %s", configs.Packages)
-	log.Printf("- Options: %s", configs.Options)
-	log.Printf("- Upgrade: %s", configs.Upgrade)
+	log.Printf("- Packages: %s", c.Packages)
+	log.Printf("- Options: %s", c.Options)
+	log.Printf("- Upgrade: %s", c.Upgrade)
 }
 
-func (configs ConfigsModel) validate() error {
-	if configs.Packages == "" {
+func (c configs) validate() error {
+	if c.Packages == "" {
 		return errors.New("no Packages parameter specified")
 	}
-	if configs.Upgrade != "" && configs.Upgrade != "yes" && configs.Upgrade != "no" {
-		return fmt.Errorf("invalid 'Upgrade' specified (%s), valid options: [yes no]", configs.Upgrade)
+	if c.Upgrade != "" && c.Upgrade != "yes" && c.Upgrade != "no" {
+		return fmt.Errorf("invalid 'Upgrade' specified (%s), valid options: [yes no]", c.Upgrade)
 	}
 	return nil
 }
