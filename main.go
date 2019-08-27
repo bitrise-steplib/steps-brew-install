@@ -1,11 +1,11 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/log"
 	"github.com/kballard/go-shellquote"
@@ -13,47 +13,25 @@ import (
 
 // configs ...
 type configs struct {
-	Packages string
-	Options  string
-	Upgrade  string
+	Packages string `env:"packages,required"`
+	Options  string `env:"options"`
+	Upgrade  string `env:"upgrade,opt[yes,no]"`
 }
 
-func createConfigsModelFromEnvs() configs {
-	return configs{
-		Packages: os.Getenv("packages"),
-		Options:  os.Getenv("options"),
-		Upgrade:  os.Getenv("upgrade"),
-	}
-}
-
-func (c configs) print() {
-	log.Infof("Configs:")
-	log.Printf("- Packages: %s", c.Packages)
-	log.Printf("- Options: %s", c.Options)
-	log.Printf("- Upgrade: %s", c.Upgrade)
-}
-
-func (c configs) validate() error {
-	if c.Packages == "" {
-		return errors.New("no Packages parameter specified")
-	}
-	if c.Upgrade != "" && c.Upgrade != "yes" && c.Upgrade != "no" {
-		return fmt.Errorf("invalid 'Upgrade' specified (%s), valid options: [yes no]", c.Upgrade)
-	}
-	return nil
+func fail(format string, v ...interface{}) {
+	log.Errorf(format, v...)
+	os.Exit(1)
 }
 
 func main() {
-	configs := createConfigsModelFromEnvs()
-
-	fmt.Println()
-	configs.print()
-	fmt.Println()
-
-	if err := configs.validate(); err != nil {
-		log.Errorf("Issue with input: %s", err)
-		os.Exit(1)
+	var cfg configs
+	if err := stepconf.Parse(&cfg); err != nil {
+		fail("Issue with input: %s", err)
 	}
+
+	stepconf.Print(cfg)
+	fmt.Println()
+	// log.SetEnableDebugLog(cfg.VerboseLog)
 
 	log.Infof("$ brew %s", command.PrintableCommandArgs(false, []string{"update"}))
 	if err := command.RunCommand("brew", "update"); err != nil {
@@ -62,20 +40,20 @@ func main() {
 	}
 
 	cmdArgs := []string{}
-	if configs.Upgrade == "yes" {
+	if cfg.Upgrade == "yes" {
 		cmdArgs = append(cmdArgs, "reinstall")
 	} else {
 		cmdArgs = append(cmdArgs, "install")
 	}
-	if configs.Options != "" {
-		args, err := shellquote.Split(configs.Options)
+	if cfg.Options != "" {
+		args, err := shellquote.Split(cfg.Options)
 		if err != nil {
 			log.Errorf("Can't split options: %s", err)
 			os.Exit(1)
 		}
 		cmdArgs = append(cmdArgs, args...)
 	}
-	packages := strings.Split(configs.Packages, " ")
+	packages := strings.Split(cfg.Packages, " ")
 	cmdArgs = append(cmdArgs, packages...)
 
 	fmt.Println()
