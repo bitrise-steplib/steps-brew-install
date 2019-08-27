@@ -16,6 +16,8 @@ type configs struct {
 	Packages string `env:"packages,required"`
 	Options  string `env:"options"`
 	Upgrade  string `env:"upgrade,opt[yes,no]"`
+
+	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
 }
 
 func fail(format string, v ...interface{}) {
@@ -31,7 +33,7 @@ func main() {
 
 	stepconf.Print(cfg)
 	fmt.Println()
-	// log.SetEnableDebugLog(cfg.VerboseLog)
+	log.SetEnableDebugLog(cfg.VerboseLog)
 
 	log.Infof("$ brew %s", command.PrintableCommandArgs(false, []string{"update"}))
 	if err := command.RunCommand("brew", "update"); err != nil {
