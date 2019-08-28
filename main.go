@@ -53,6 +53,8 @@ func cmdArgs(options, packages string, upgrade, verboseLog bool) (args []string)
 
 func collectCache() error {
 	cmd := command.New("brew", "--cache")
+	log.Debugf("$ %s", cmd.PrintableCommandArgs())
+
 	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
 	if err != nil {
 		return fmt.Errorf("failed to find homebrew chache directory, error: %s", err)
@@ -67,6 +69,16 @@ func collectCache() error {
 	return nil
 }
 
+func cleanCache() error {
+	cmd := command.New("brew", "cleanup").SetStdout(os.Stdout).SetStderr(os.Stderr)
+
+	log.Donef("$ %s", cmd.PrintableCommandArgs())
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to clean homebrew chache directory, error: %s", err)
+	}
+	return nil
+}
+
 func main() {
 	var cfg configs
 	if err := stepconf.Parse(&cfg); err != nil {
@@ -77,30 +89,40 @@ func main() {
 	fmt.Println()
 	log.SetEnableDebugLog(cfg.VerboseLog)
 
-	log.Infof("$ brew %s", command.PrintableCommandArgs(false, []string{"update"}))
-	if err := command.RunCommand("brew", "update"); err != nil {
+	log.Infof("Update homebrew")
+	cmd := command.New("brew", "update").SetStdout(os.Stdout).SetStderr(os.Stderr)
+	log.Donef("$ %s", cmd.PrintableCommandArgs())
+
+	if err := cmd.Run(); err != nil {
 		fail("Can't update brew: %s", err)
 	}
-
 	fmt.Println()
 
+	log.Infof("Run brew command")
 	args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
-	log.Infof("$ brew %s", command.PrintableCommandArgs(false, args))
+	cmd = command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
 
-	if err := command.RunCommand("brew", args...); err != nil {
+	log.Donef("$ %s", cmd.PrintableCommandArgs())
+	if err := cmd.Run(); err != nil {
 		fail("Can't install formulas:  %s", err)
 	}
 
 	// Collecting caches
 	if cfg.CacheEnabled {
 		fmt.Println()
-		log.Infof("$ Collecting Homebrew cache")
+		log.Infof("Collecting homebrew cache")
 
 		if err := collectCache(); err != nil {
 			log.Warnf("Cache collection skipped: %s", err)
 		} else {
 			log.Donef("Cache path added to $BITRISE_CACHE_INCLUDE_PATHS")
 			log.Printf("Add '%s' step to upload the collected cache for the next build.", colorstring.Yellow("Bitrise.io Cache:Push"))
+
+			fmt.Println()
+			log.Infof("Cleanup homebrew cache")
+			if err := cleanCache(); err != nil {
+				log.Warnf("Cache cleanup skipped: %s", err)
+			}
 		}
 	}
 }
