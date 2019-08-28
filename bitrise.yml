@@ -11,6 +11,40 @@ workflows:
     - golint:
     - errcheck:
     - go-test:
+    after_run:
+    - install
+    - upgrade
+    - cache
+
+  install:
+    envs:
+    - PACKAGES: "go"
+    - OPTIONS: ""
+    - UPGRADE: "no"
+    - CACHE_ENABLED: "no"
+    after_run:
+    - _common
+
+  upgrade:
+    envs:
+    - PACKAGES: "go"
+    - OPTIONS: ""
+    - UPGRADE: "yes"
+    - CACHE_ENABLED: "no"
+    after_run:
+    - _common
+
+  cache:
+    envs:
+    - PACKAGES: "go"
+    - OPTIONS: ""
+    - UPGRADE: "yes"
+    - CACHE_ENABLED: "yes"
+    after_run:
+    - _common
+  
+  _common:
+    steps:
     - change-workdir:
         title: Switch working dir to test / _tmp dir
         description: |-
@@ -26,10 +60,12 @@ workflows:
         title: Step Test
         run_if: true
         inputs:
-        - packages: "go"
-        - options: ""
-        - upgrade: "yes"
+        - packages: $PACKAGES
+        - options: $OPTIONS
+        - upgrade: $UPGRADE
+        - cache_enabled: $CACHE_ENABLED
         - verbose_log: "yes"
+
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
   audit-this-step:

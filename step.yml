@@ -37,8 +37,20 @@ inputs:
         Otherwise the step calls `brew install [options] [packages]`
       is_expand: true
       value_options:
-        - "yes"
-        - "no"
+      - "yes"
+      - "no"
+  - cache_enabled: "no"
+    opts:
+      category: Cache
+      title: Cache 
+      description: |
+        Select if the contents of ~/Library/Caches/Homebrew directory should be cached.
+        `true`: Mark brew installers to be cached.
+        `false`: Do not use cache.
+      is_required: true
+      value_options:
+      - "yes"
+      - "no"
   - verbose_log: "no"
     opts:
       title: "Enable verbose logging?"

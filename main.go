@@ -5,7 +5,9 @@ import (
 	"os"
 	"strings"
 
+	"github.com/bitrise-io/go-steputils/cache"
 	"github.com/bitrise-io/go-steputils/stepconf"
+	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/log"
 	shellquote "github.com/kballard/go-shellquote"
@@ -16,6 +18,8 @@ type configs struct {
 	Packages string `env:"packages,required"`
 	Options  string `env:"options"`
 	Upgrade  bool   `env:"upgrade,opt[yes,no]"`
+
+	CacheEnabled bool `env:"cache_enabled,opt[yes,no]"`
 
 	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
 }
@@ -47,6 +51,22 @@ func cmdArgs(options, packages string, upgrade, verboseLog bool) (args []string)
 	return
 }
 
+func collectCache() error {
+	cmd := command.New("brew", "--cache")
+	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to find homebrew chache directory, error: %s", err)
+	}
+
+	brewCache := cache.New()
+	brewCache.IncludePath(brewCachePth)
+	if err := brewCache.Commit(); err != nil {
+		return fmt.Errorf("failed to commit cache paths, error: %s", err)
+
+	}
+	return nil
+}
+
 func main() {
 	var cfg configs
 	if err := stepconf.Parse(&cfg); err != nil {
@@ -59,8 +79,7 @@ func main() {
 
 	log.Infof("$ brew %s", command.PrintableCommandArgs(false, []string{"update"}))
 	if err := command.RunCommand("brew", "update"); err != nil {
-		log.Errorf("Can't update brew: %s", err)
-		os.Exit(1)
+		fail("Can't update brew: %s", err)
 	}
 
 	fmt.Println()
@@ -69,7 +88,19 @@ func main() {
 	log.Infof("$ brew %s", command.PrintableCommandArgs(false, args))
 
 	if err := command.RunCommand("brew", args...); err != nil {
-		log.Errorf("Can't install formulas:  %s", err)
-		os.Exit(1)
+		fail("Can't install formulas:  %s", err)
+	}
+
+	// Collecting caches
+	if cfg.CacheEnabled {
+		fmt.Println()
+		log.Infof("$ Collecting Homebrew cache")
+
+		if err := collectCache(); err != nil {
+			log.Warnf("Cache collection skipped: %s", err)
+		} else {
+			log.Donef("Cache path added to $BITRISE_CACHE_INCLUDE_PATHS")
+			log.Printf("Add '%s' step to upload the collected cache for the next build.", colorstring.Yellow("Bitrise.io Cache:Push"))
+		}
 	}
 }
