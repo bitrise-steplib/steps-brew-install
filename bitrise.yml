@@ -18,7 +18,7 @@ workflows:
 
   install:
     envs:
-    - PACKAGES: "vlc"
+    - PACKAGES: "plex-media-player"
     - OPTIONS: ""
     - UPGRADE: "no"
     - CACHE_ENABLED: "no"
@@ -27,7 +27,7 @@ workflows:
 
   upgrade:
     envs:
-    - PACKAGES: "vlc"
+    - PACKAGES: "plex-media-player"
     - OPTIONS: ""
     - UPGRADE: "yes"
     - CACHE_ENABLED: "no"
@@ -36,7 +36,7 @@ workflows:
 
   cache:
     envs:
-    - PACKAGES: "vlc"
+    - PACKAGES: "plex-media-player"
     - OPTIONS: ""
     - UPGRADE: "yes"
     - CACHE_ENABLED: "yes"
