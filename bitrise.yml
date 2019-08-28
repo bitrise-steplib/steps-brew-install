@@ -18,7 +18,7 @@ workflows:
 
   install:
     envs:
-    - PACKAGES: "go"
+    - PACKAGES: "vlc"
     - OPTIONS: ""
     - UPGRADE: "no"
     - CACHE_ENABLED: "no"
@@ -27,7 +27,7 @@ workflows:
 
   upgrade:
     envs:
-    - PACKAGES: "go"
+    - PACKAGES: "vlc"
     - OPTIONS: ""
     - UPGRADE: "yes"
     - CACHE_ENABLED: "no"
@@ -36,7 +36,7 @@ workflows:
 
   cache:
     envs:
-    - PACKAGES: "go"
+    - PACKAGES: "vlc"
     - OPTIONS: ""
     - UPGRADE: "yes"
     - CACHE_ENABLED: "yes"
