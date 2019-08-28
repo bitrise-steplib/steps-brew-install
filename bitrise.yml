@@ -27,8 +27,9 @@ workflows:
         run_if: true
         inputs:
         - packages: "go"
-        - options: "-v"
+        - options: ""
         - upgrade: "yes"
+        - verbose_log: "yes"
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
   audit-this-step:
