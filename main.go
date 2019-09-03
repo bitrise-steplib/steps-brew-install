@@ -1,87 +1,128 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/bitrise-io/go-steputils/cache"
+	"github.com/bitrise-io/go-steputils/stepconf"
+	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/command"
 	"github.com/bitrise-io/go-utils/log"
-	"github.com/kballard/go-shellquote"
+	shellquote "github.com/kballard/go-shellquote"
 )
 
-// ConfigsModel ...
-type ConfigsModel struct {
-	Packages string
-	Options  string
-	Upgrade  string
+// configs ...
+type configs struct {
+	Packages string `env:"packages,required"`
+	Options  string `env:"options"`
+	Upgrade  bool   `env:"upgrade,opt[yes,no]"`
+
+	CacheEnabled bool `env:"cache_enabled,opt[yes,no]"`
+
+	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
 }
 
-func createConfigsModelFromEnvs() ConfigsModel {
-	return ConfigsModel{
-		Packages: os.Getenv("packages"),
-		Options:  os.Getenv("options"),
-		Upgrade:  os.Getenv("upgrade"),
+func fail(format string, v ...interface{}) {
+	log.Errorf(format, v...)
+	os.Exit(1)
+}
+
+func cmdArgs(options, packages string, upgrade, verboseLog bool) (args []string) {
+	if upgrade {
+		args = append(args, "reinstall")
+	} else {
+		args = append(args, "install")
 	}
-}
-
-func (configs ConfigsModel) print() {
-	log.Infof("Configs:")
-	log.Printf("- Packages: %s", configs.Packages)
-	log.Printf("- Options: %s", configs.Options)
-	log.Printf("- Upgrade: %s", configs.Upgrade)
-}
-
-func (configs ConfigsModel) validate() error {
-	if configs.Packages == "" {
-		return errors.New("no Packages parameter specified")
+	if verboseLog && !strings.Contains(options, "-v") && !strings.Contains(options, "---verbose") {
+		args = append(args, "-v")
 	}
-	if configs.Upgrade != "" && configs.Upgrade != "yes" && configs.Upgrade != "no" {
-		return fmt.Errorf("invalid 'Upgrade' specified (%s), valid options: [yes no]", configs.Upgrade)
+
+	if options != "" {
+		o, err := shellquote.Split(options)
+		if err != nil {
+			fail("Can't split options: %s", err)
+		}
+		args = append(args, o...)
+	}
+	p := strings.Split(packages, " ")
+	args = append(args, p...)
+	return
+}
+
+func collectCache() error {
+	cmd := command.New("brew", "--cache")
+	log.Debugf("$ %s", cmd.PrintableCommandArgs())
+
+	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
+	if err != nil {
+		return fmt.Errorf("failed to find homebrew chache directory, error: %s", err)
+	}
+
+	brewCache := cache.New()
+	brewCache.IncludePath(brewCachePth)
+	if err := brewCache.Commit(); err != nil {
+		return fmt.Errorf("failed to commit cache paths, error: %s", err)
+
+	}
+	return nil
+}
+
+func cleanCache() error {
+	cmd := command.New("brew", "cleanup").SetStdout(os.Stdout).SetStderr(os.Stderr)
+
+	log.Donef("$ %s", cmd.PrintableCommandArgs())
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("failed to clean homebrew chache directory, error: %s", err)
 	}
 	return nil
 }
 
 func main() {
-	configs := createConfigsModelFromEnvs()
+	var cfg configs
+	if err := stepconf.Parse(&cfg); err != nil {
+		fail("Issue with input: %s", err)
+	}
 
+	stepconf.Print(cfg)
 	fmt.Println()
-	configs.print()
+	log.SetEnableDebugLog(cfg.VerboseLog)
+
+	log.Infof("Update homebrew")
+	cmd := command.New("brew", "update").SetStdout(os.Stdout).SetStderr(os.Stderr)
+	log.Donef("$ %s", cmd.PrintableCommandArgs())
+
+	if err := cmd.Run(); err != nil {
+		fail("Can't update brew: %s", err)
+	}
 	fmt.Println()
 
-	if err := configs.validate(); err != nil {
-		log.Errorf("Issue with input: %s", err)
-		os.Exit(1)
+	log.Infof("Run brew command")
+	args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
+	cmd = command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+
+	log.Donef("$ %s", cmd.PrintableCommandArgs())
+	if err := cmd.Run(); err != nil {
+		fail("Can't install formulas:  %s", err)
 	}
 
-	log.Infof("$ brew %s", command.PrintableCommandArgs(false, []string{"update"}))
-	if err := command.RunCommand("brew", "update"); err != nil {
-		log.Errorf("Can't update brew: %s", err)
-		os.Exit(1)
-	}
+	// Collecting caches
+	if cfg.CacheEnabled {
+		fmt.Println()
+		log.Infof("Collecting homebrew cache")
 
-	cmdArgs := []string{}
-	if configs.Upgrade == "yes" {
-		cmdArgs = append(cmdArgs, "reinstall")
-	} else {
-		cmdArgs = append(cmdArgs, "install")
-	}
-	if configs.Options != "" {
-		args, err := shellquote.Split(configs.Options)
-		if err != nil {
-			log.Errorf("Can't split options: %s", err)
-			os.Exit(1)
+		if err := collectCache(); err != nil {
+			log.Warnf("Cache collection skipped: %s", err)
+		} else {
+			log.Donef("Cache path added to $BITRISE_CACHE_INCLUDE_PATHS")
+			log.Printf("Add '%s' step to upload the collected cache for the next build.", colorstring.Yellow("Bitrise.io Cache:Push"))
+
+			fmt.Println()
+			log.Infof("Cleanup homebrew cache")
+			if err := cleanCache(); err != nil {
+				log.Warnf("Cache cleanup skipped: %s", err)
+			}
 		}
-		cmdArgs = append(cmdArgs, args...)
-	}
-	packages := strings.Split(configs.Packages, " ")
-	cmdArgs = append(cmdArgs, packages...)
-
-	fmt.Println()
-	log.Infof("$ brew %s", command.PrintableCommandArgs(false, cmdArgs))
-	if err := command.RunCommand("brew", cmdArgs...); err != nil {
-		log.Errorf("Can't install formulas:  %s", err)
-		os.Exit(1)
 	}
 }
