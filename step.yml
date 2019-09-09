@@ -41,12 +41,11 @@ inputs:
       - "no"
   - cache_enabled: "no"
     opts:
-      category: Cache
       title: Cache 
       description: |
         Select if the contents of ~/Library/Caches/Homebrew directory should be cached.
-        `true`: Mark brew installers to be cached.
-        `false`: Do not use cache.
+        `yes`: Mark brew installers to be cached.
+        `no`: Do not use cache.
       is_required: true
       value_options:
       - "yes"
