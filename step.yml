@@ -1,11 +1,14 @@
 title: Brew install
 summary: Install or upgrade formula with brew
 description: Install or upgrade formula with brew
+
 website: https://github.com/bitrise-steplib/steps-brew-install
 source_code_url: https://github.com/bitrise-steplib/steps-brew-install
 support_url: https://github.com/bitrise-steplib/steps-brew-install/issues
+
 type_tags:
   - installer
+
 toolkit:
   go:
     package_name: github.com/bitrise-steplib/steps-brew-install
@@ -13,40 +16,35 @@ toolkit:
 inputs:
   - packages:
     opts:
-      title: "Name of the formula to install/upgrade"
-      summary: "Name of the formula to install/upgrade"
-      description: "Name of the formula to install/upgrade"
-      is_expand: true
+      title: "Formula name"
+      summary: "Name of the formula to install/reinstall."
       is_required: true
+  - upgrade: "yes"
+    opts:
+      title: "Upgrade formula?"
+      summary: "Upgrade formula if previously installed?"
+      description: |
+        If set to `"yes"`, the step will upgrade the defined packages by calling `brew reinstall [options] [packages]` command.
+
+        Otherwise the step calls `brew install [options] [packages]`.
+      is_required: true
+      value_options:
+      - "yes"
+      - "no"
   - options:
     opts:
-      title: "Options for Brew install/upgrade"
-      summary:  "Options for Brew install/upgrade"
+      title: "Brew install/reinstall options"
+      summary:  "Flags to pass to the bew install/reinstall command."
       description: |
         Flags to pass to the bew install/reinstall command.
 
         `brew install/reinstall [options] [packages]`
-      is_expand: true
-  - upgrade: "yes"
-    opts:
-      title: "Upgrade formula if previously installed"
-      summary: "Upgrade formula if previously installed"
-      description: |
-        If set to `y`, the step will upgrade the defined packages by calling `brew reinstall [options] [packages]` command.
-
-        Otherwise the step calls `brew install [options] [packages]`.
-      is_expand: true
-      value_options:
-      - "yes"
-      - "no"
   - cache_enabled: "no"
     opts:
-      category: Cache
-      title: Cache 
+      title: Enable cache?
+      summary:  "Should the step collect files to be cached?"
       description: |
-        Select if the contents of ~/Library/Caches/Homebrew directory should be cached.
-        `true`: Mark brew installers to be cached.
-        `false`: Do not use cache.
+        If set to `"yes"` the contents of `~/Library/Caches/Homebrew` directory will be cached.
       is_required: true
       value_options:
       - "yes"
@@ -54,7 +52,7 @@ inputs:
   - verbose_log: "no"
     opts:
       title: "Enable verbose logging?"
-      description: Enable verbose logging?
+      summary: Should the step print more detailed log?
       is_required: true
       value_options:
       - "yes"
