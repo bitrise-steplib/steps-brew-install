@@ -32,9 +32,9 @@ inputs:
       title: "Upgrade formula if previously installed"
       summary: "Upgrade formula if previously installed"
       description: |
-        If set the step will upgrade the defined packages by calling `brew reinstall [options] [packages]` command.
+        If set to `y`, the step will upgrade the defined packages by calling `brew reinstall [options] [packages]` command.
 
-        Otherwise the step calls `brew install [options] [packages]`
+        Otherwise the step calls `brew install [options] [packages]`.
       is_expand: true
       value_options:
       - "yes"
