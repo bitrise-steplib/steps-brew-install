@@ -34,9 +34,9 @@ inputs:
   - options:
     opts:
       title: "Brew install/reinstall options"
-      summary:  "Flags to pass to the bew install/reinstall command."
+      summary:  "Flags to pass to the brew install/reinstall command."
       description: |
-        Flags to pass to the bew install/reinstall command.
+        Flags to pass to the brew install/reinstall command.
 
         `brew install/reinstall [options] [packages]`
   - cache_enabled: "no"
