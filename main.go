@@ -90,7 +90,12 @@ func main() {
 	log.SetEnableDebugLog(cfg.VerboseLog)
 
 	log.Infof("Update homebrew")
-	cmd := command.New("brew", "update").SetStdout(os.Stdout).SetStderr(os.Stderr)
+	if cfg.VerboseLog {
+		cmd := command.New("brew", "update").SetStdout(os.Stdout).SetStderr(os.Stderr)
+	} else {
+		cmd := command.New("brew", "update", "--quiet").SetStdout(os.Stdout).SetStderr(os.Stderr)
+	}
+	
 	log.Donef("$ %s", cmd.PrintableCommandArgs())
 
 	if err := cmd.Run(); err != nil {
