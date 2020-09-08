@@ -89,15 +89,6 @@ func main() {
 	fmt.Println()
 	log.SetEnableDebugLog(cfg.VerboseLog)
 
-	log.Infof("Update homebrew")
-	cmd := command.New("brew", "update").SetStdout(os.Stdout).SetStderr(os.Stderr)
-	log.Donef("$ %s", cmd.PrintableCommandArgs())
-
-	if err := cmd.Run(); err != nil {
-		fail("Can't update brew: %s", err)
-	}
-	fmt.Println()
-
 	log.Infof("Run brew command")
 	args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
 	cmd = command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
