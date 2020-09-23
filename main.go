@@ -91,7 +91,7 @@ func main() {
 
 	log.Infof("Run brew command")
 	args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
-	cmd = command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+	cmd := command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
 
 	log.Donef("$ %s", cmd.PrintableCommandArgs())
 	if err := cmd.Run(); err != nil {
