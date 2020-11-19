@@ -1,6 +1,27 @@
 title: Brew install
-summary: Install or upgrade formula with brew
-description: Install or upgrade formula with brew
+summary: Install or upgrade dependencies with Homebrew.
+description: |-
+
+  Install or upgrade dependencies using Homebrew, a package manager for MacOS. 
+  
+  ### Configuring the Step 
+  
+  Homebrew defines the available packages as formulae. Our Step needs the name of the Homebrew formulae you want to use. 
+  
+  1. In the **Formula name** input, put the name of the formula you want to download. 
+  1. In the **Upgrade formula?** input, set the default behavior for previously installed packages. If the input is set to `yes`, the Step will call `brew reinstall` to upgrade them to the latest version.
+  1. In the **Brew install/reinstall options** input, you can set additional flags for the `brew install` or `brew reinstall` commands. 
+     For the possible options, see [Homebrew's documentation](https://docs.brew.sh/Manpage#install-options-formulacask).
+     
+  ### Useful links
+  
+  - [Homebrew documentation](https://docs.brew.sh/Manpage)
+  - [Caching Homebrew installers](https://devcenter.bitrise.io/builds/caching/caching-homebrew-installers/)
+  
+  ### Related Steps 
+  
+  - [Run yarn command](https://www.bitrise.io/integrations/steps/yarn)
+  - [Run npm command](https://www.bitrise.io/integrations/steps/npm)
 
 website: https://github.com/bitrise-steplib/steps-brew-install
 source_code_url: https://github.com/bitrise-steplib/steps-brew-install
@@ -25,7 +46,6 @@ inputs:
       summary: "Upgrade formula if previously installed?"
       description: |
         If set to `"yes"`, the step will upgrade the defined packages by calling `brew reinstall [options] [packages]` command.
-
         Otherwise the step calls `brew install [options] [packages]`.
       is_required: true
       value_options:
@@ -37,7 +57,6 @@ inputs:
       summary:  "Flags to pass to the brew install/reinstall command."
       description: |
         Flags to pass to the brew install/reinstall command.
-
         `brew install/reinstall [options] [packages]`
   - cache_enabled: "no"
     opts:
