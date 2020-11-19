@@ -1,6 +1,6 @@
 title: Brew install
 summary: Install or upgrade dependencies with Homebrew.
-description: -|
+description: |-
 
   Install or upgrade dependencies using Homebrew, a package manager for MacOS. 
   
