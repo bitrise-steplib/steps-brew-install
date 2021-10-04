@@ -17,6 +17,7 @@ workflows:
     - install
     - upgrade
     - cache
+    - test_bundle
 
   install:
     envs:
@@ -45,7 +46,48 @@ workflows:
     after_run:
     - _common
   
+  bundle:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            echo "brew \"fswatch\"" > Brewfile
+    - path::./:
+        title: Step Test
+        run_if: true
+        inputs:
+        - use_brewfile: "yes"
+  bundle_path:
+    steps:
+    - script:
+        inputs:
+        - content: |-
+            #!/bin/bash
+            set -ex
+            mkdir -p ./pathtest
+            echo "brew \"fswatch\"" > ./pathtest/Brewfile
+    - path::./:
+        title: Step Test
+        run_if: true
+        inputs:
+        - use_brewfile: "yes"
+        - brewfile_path: "./pathtest/Brewfile"
+  
   _common:
+    steps:
+    - path::./:
+        title: Step Test
+        run_if: true
+        inputs:
+        - packages: $PACKAGES
+        - options: $OPTIONS
+        - upgrade: $UPGRADE
+        - cache_enabled: $CACHE_ENABLED
+        - verbose_log: "yes"
+  
+  test_bundle:
     steps:
     - change-workdir:
         title: Switch working dir to test / _tmp dir
@@ -58,15 +100,9 @@ workflows:
         inputs:
         - path: ./_tmp
         - is_create_path: true
-    - path::./:
-        title: Step Test
-        run_if: true
-        inputs:
-        - packages: $PACKAGES
-        - options: $OPTIONS
-        - upgrade: $UPGRADE
-        - cache_enabled: $CACHE_ENABLED
-        - verbose_log: "yes"
+    after_run:
+      - bundle
+      - bundle_path
 
   # ----------------------------------------------------------------
   # --- workflows to Share this step into a Step Library
