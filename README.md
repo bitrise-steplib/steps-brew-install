@@ -61,7 +61,7 @@ If you want to use your step in your project's `bitrise.yml`:
 You can find more examples of step reference styles
 in the [bitrise CLI repository](https://github.com/bitrise-io/bitrise/blob/master/_examples/tutorials/steps-and-workflows/bitrise.yml#L65).
 
-## How to contribute to this Step
+## Contribute to this Step
 
 1. Fork this repository
 2. `git clone` it
@@ -85,7 +85,7 @@ You can share your Step or step version with the [bitrise CLI](https://github.co
 1. Run: `bitrise run test` to test the step
 1. Run: `bitrise run audit-this-step` to audit the `step.yml`
 1. Check the `share-this-step` workflow in the `bitrise.yml`, and fill out the
-   `envs` if you haven't done so already (don't forget to bump the version number if this is an update
+   `envs` if you haven't done already (don't forget to bump the version number if this is an update
    of your step!)
 1. Then run: `bitrise run share-this-step` to share the step (version) you specified in the `envs`
 1. Send the Pull Request, as described in the logs of `bitrise run share-this-step`
