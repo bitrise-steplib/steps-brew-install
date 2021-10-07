@@ -15,11 +15,13 @@ import (
 
 // configs ...
 type configs struct {
-	Packages string `env:"packages,required"`
+	Packages string `env:"packages"`
 	Options  string `env:"options"`
 	Upgrade  bool   `env:"upgrade,opt[yes,no]"`
 
-	CacheEnabled bool `env:"cache_enabled,opt[yes,no]"`
+	UseBrewfile  bool   `env:"use_brewfile,opt[yes,no]"`
+	BrewfilePath string `env:"brewfile_path"`
+	CacheEnabled bool   `env:"cache_enabled,opt[yes,no]"`
 
 	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
 }
@@ -46,8 +48,36 @@ func cmdArgs(options, packages string, upgrade, verboseLog bool) (args []string)
 		}
 		args = append(args, o...)
 	}
+	if packages == "" {
+		fail("No packages provided, and not using a Brewfile")
+	}
+
 	p := strings.Split(packages, " ")
 	args = append(args, p...)
+	return
+}
+
+func brewFileArgs(options string, verboseLog bool, path string) (args []string) {
+	args = append(args, "bundle")
+	if verboseLog && !strings.Contains(options, "-v") && !strings.Contains(options, "---verbose") {
+		args = append(args, "-v")
+	}
+
+	if path != "" {
+		if strings.HasSuffix(path, "Brewfile") {
+			args = append(args, "--file", path)
+		} else {
+			fail("Brewfile path must include the filename")
+		}
+	}
+
+	if options != "" {
+		o, err := shellquote.Split(options)
+		if err != nil {
+			fail("Can't split options: %s", err)
+		}
+		args = append(args, o...)
+	}
 	return
 }
 
@@ -90,12 +120,22 @@ func main() {
 	log.SetEnableDebugLog(cfg.VerboseLog)
 
 	log.Infof("Run brew command")
-	args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
-	cmd := command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+	if cfg.UseBrewfile {
+		args := brewFileArgs(cfg.Options, cfg.VerboseLog, cfg.BrewfilePath)
+		cmd := command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
 
-	log.Donef("$ %s", cmd.PrintableCommandArgs())
-	if err := cmd.Run(); err != nil {
-		fail("Can't install formulas:  %s", err)
+		log.Donef("$ %s", cmd.PrintableCommandArgs())
+		if err := cmd.Run(); err != nil {
+			fail("Can't install with Brewfile:  %s", err)
+		}
+	} else {
+		args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
+		cmd := command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+
+		log.Donef("$ %s", cmd.PrintableCommandArgs())
+		if err := cmd.Run(); err != nil {
+			fail("Can't install formulas:  %s", err)
+		}
 	}
 
 	// Collecting caches

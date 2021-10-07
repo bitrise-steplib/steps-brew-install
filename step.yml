@@ -38,8 +38,8 @@ inputs:
   - packages:
     opts:
       title: "Formula name"
-      summary: "Name of the formula to install/reinstall."
-      is_required: true
+      summary: "Name of the formula to install/reinstall. Must be specified when `use_brewfile` is not `yes`"
+      is_required: no
   - upgrade: "yes"
     opts:
       title: "Upgrade formula?"
@@ -51,6 +51,23 @@ inputs:
       value_options:
       - "yes"
       - "no"
+  - use_brewfile: "no"
+    opts:
+      title: "Use a Brewfile to install packages?"
+      summary: "Installs packages using a Brewfile"
+      description: |
+        If set to `"yes"`, the step will install packages in the Brewfile by running `brew bundle`. If no Brewfile path is set, it assumes a Brewfile exists in the current directory.
+      is_required: false
+      value_options:
+      - "yes"
+      - "no"
+  - brewfile_path:
+    opts:
+      title: "Path to the Brewfile"
+      summary: "Installs packages from a Brewfile at the specified path"
+      description: |
+        If set, `use_brewfile` must be set to `yes`
+      is_required: false
   - options:
     opts:
       title: "Brew install/reinstall options"
