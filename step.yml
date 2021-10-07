@@ -56,7 +56,7 @@ inputs:
       title: "Use a Brewfile to install packages?"
       summary: "Installs packages using a Brewfile"
       description: |
-        If set to `"yes"`, the step will install packages in the Brewfile by running `brew bundle`.
+        If set to `"yes"`, the step will install packages in the Brewfile by running `brew bundle`. If no Brewfile path is set, it assumes a Brewfile exists in the current directory.
       is_required: false
       value_options:
       - "yes"
