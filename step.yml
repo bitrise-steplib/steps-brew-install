@@ -47,7 +47,6 @@ inputs:
       description: |
         If set to `"yes"`, the step will upgrade the defined packages by calling `brew reinstall [options] [packages]` command.
         Otherwise the step calls `brew install [options] [packages]`.
-      is_required: true
       value_options:
       - "yes"
       - "no"
