@@ -6,13 +6,21 @@ description: |-
   
   ### Configuring the Step 
   
-  Homebrew defines the available packages as formulae. Our Step needs the name of the Homebrew formulae you want to use. 
+  Homebrew defines the available packages as formulae. Our Step needs the name of the Homebrew formulae you want to use, either specified as a step input, or from a Brewfile in the project's source.
   
+  To specify formulae in the step configuration
+
   1. In the **Formula name** input, put the name of the formula you want to download. 
   1. In the **Upgrade formula?** input, set the default behavior for previously installed packages. If the input is set to `yes`, the Step will call `brew reinstall` to upgrade them to the latest version.
   1. In the **Brew install/reinstall options** input, you can set additional flags for the `brew install` or `brew reinstall` commands. 
      For the possible options, see [Homebrew's documentation](https://docs.brew.sh/Manpage#install-options-formulacask).
-     
+  
+  Alternatively you can install formulae using a Brewfile
+
+  1. Add a `Brewfile` to the root of the project's source. For the format of the Brewfile, see the [Homebrew Bundle documentation](https://github.com/Homebrew/homebrew-bundle#usage)
+  1. Set the **Use a Brewfile to install packages?** input to "yes". 
+  1. (optional) Set the **Path to the Brewfile** input if it is not in the root of the project's source
+
   ### Useful links
   
   - [Homebrew documentation](https://docs.brew.sh/Manpage)
@@ -47,7 +55,6 @@ inputs:
       description: |
         If set to `"yes"`, the step will upgrade the defined packages by calling `brew reinstall [options] [packages]` command.
         Otherwise the step calls `brew install [options] [packages]`.
-      is_required: true
       value_options:
       - "yes"
       - "no"
@@ -66,7 +73,7 @@ inputs:
       title: "Path to the Brewfile"
       summary: "Installs packages from a Brewfile at the specified path"
       description: |
-        If set, `use_brewfile` must be set to `yes`
+        If set, `use_brewfile` must be set to `yes`. Path must end with `Brewfile`
       is_required: false
   - options:
     opts:
