@@ -163,10 +163,13 @@ func brewCommand(args []string) *command.Model {
 	if err != nil {
 		log.Warnf("Failed to get brew prefix: %s\n%s", err, brewPrefix)
 	}
+	log.Debugf("Brew prefix: %s", brewPrefix)
+
 	activeArch, err := command.New("arch").RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
 		log.Warnf("Failed to get active arch: %s\n%s", err, activeArch)
 	}
+	log.Debugf("Active arch: %s", activeArch)
 
 	var effectiveCmd string
 	var effectiveArgs []string
