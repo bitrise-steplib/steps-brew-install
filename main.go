@@ -173,7 +173,7 @@ func brewCommand(args []string) *command.Model {
 
 	var effectiveCmd string
 	var effectiveArgs []string
-	if activeArch == "x86_64" && brewPrefix == "/opt/homebrew" {
+	if (activeArch == "i386" || activeArch == "x86_64") && brewPrefix == "/opt/homebrew" {
 		// We are running on an Apple Silicon system, but emulated under Rosetta
 		// Fix this inconsistency by running brew natively
 		effectiveCmd = "arch"
