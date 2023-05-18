@@ -82,7 +82,7 @@ func brewFileArgs(options string, verboseLog bool, path string) (args []string) 
 }
 
 func collectCache() error {
-	cmd := command.New("brew", "--cache")
+	cmd := brewCommand([]string{"--cache"})
 	log.Debugf("$ %s", cmd.PrintableCommandArgs())
 
 	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
@@ -100,7 +100,7 @@ func collectCache() error {
 }
 
 func cleanCache() error {
-	cmd := command.New("brew", "cleanup").SetStdout(os.Stdout).SetStderr(os.Stderr)
+	cmd := brewCommand([]string{"cleanup"})
 
 	log.Donef("$ %s", cmd.PrintableCommandArgs())
 	if err := cmd.Run(); err != nil {
@@ -122,7 +122,7 @@ func main() {
 	log.Infof("Run brew command")
 	if cfg.UseBrewfile {
 		args := brewFileArgs(cfg.Options, cfg.VerboseLog, cfg.BrewfilePath)
-		cmd := command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+		cmd := brewCommand(args)
 
 		log.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
@@ -130,7 +130,7 @@ func main() {
 		}
 	} else {
 		args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
-		cmd := command.New("brew", args...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+		cmd := brewCommand(args)
 
 		log.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
@@ -156,4 +156,33 @@ func main() {
 			}
 		}
 	}
+}
+
+func brewCommand(args []string) *command.Model {
+	brewPrefix, err := command.New("brew", "--prefix").RunAndReturnTrimmedCombinedOutput()
+	if err != nil {
+		log.Warnf("Failed to get brew prefix: %s\n%s", err, brewPrefix)
+	}
+	log.Debugf("Brew prefix: %s", brewPrefix)
+
+	activeArch, err := command.New("arch").RunAndReturnTrimmedCombinedOutput()
+	if err != nil {
+		log.Warnf("Failed to get active arch: %s\n%s", err, activeArch)
+	}
+	log.Debugf("Active arch: %s", activeArch)
+
+	var effectiveCmd string
+	var effectiveArgs []string
+	if (activeArch == "i386" || activeArch == "x86_64") && brewPrefix == "/opt/homebrew" {
+		// We are running on an Apple Silicon system, but emulated under Rosetta
+		// Fix this inconsistency by running brew natively
+		effectiveCmd = "arch"
+		effectiveArgs = []string{"-arm64", "brew"}
+		effectiveArgs = append(effectiveArgs, args...)
+	} else {
+		effectiveCmd = "brew"
+		effectiveArgs = args
+	}
+
+	return command.New(effectiveCmd, effectiveArgs...).SetStdout(os.Stdout).SetStderr(os.Stderr)
 }
