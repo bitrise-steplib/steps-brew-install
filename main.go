@@ -82,7 +82,7 @@ func brewFileArgs(options string, verboseLog bool, path string) (args []string) 
 }
 
 func collectCache() error {
-	cmd := brewCommand([]string{"--cache"})
+	cmd := brewCommand([]string{"--cache"}, false)
 	log.Debugf("$ %s", cmd.PrintableCommandArgs())
 
 	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
@@ -100,7 +100,7 @@ func collectCache() error {
 }
 
 func cleanCache() error {
-	cmd := brewCommand([]string{"cleanup"})
+	cmd := brewCommand([]string{"cleanup"}, true)
 
 	log.Donef("$ %s", cmd.PrintableCommandArgs())
 	if err := cmd.Run(); err != nil {
@@ -122,7 +122,7 @@ func main() {
 	log.Infof("Run brew command")
 	if cfg.UseBrewfile {
 		args := brewFileArgs(cfg.Options, cfg.VerboseLog, cfg.BrewfilePath)
-		cmd := brewCommand(args)
+		cmd := brewCommand(args, true)
 
 		log.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
@@ -130,7 +130,7 @@ func main() {
 		}
 	} else {
 		args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
-		cmd := brewCommand(args)
+		cmd := brewCommand(args, true)
 
 		log.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
@@ -158,7 +158,7 @@ func main() {
 	}
 }
 
-func brewCommand(args []string) *command.Model {
+func brewCommand(args []string, setDefaultOutput bool) *command.Model {
 	brewPrefix, err := command.New("brew", "--prefix").RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
 		log.Warnf("Failed to get brew prefix: %s\n%s", err, brewPrefix)
@@ -184,5 +184,9 @@ func brewCommand(args []string) *command.Model {
 		effectiveArgs = args
 	}
 
-	return command.New(effectiveCmd, effectiveArgs...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+	if setDefaultOutput {
+		return command.New(effectiveCmd, effectiveArgs...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+	}
+
+	return command.New(effectiveCmd, effectiveArgs...)
 }
