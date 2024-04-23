@@ -59,7 +59,7 @@ workflows:
         title: Step Test
         inputs:
         - use_brewfile: "yes"
-        - brewfile_path: "./pathtest/Brewfile"
+        - brewfile_path: ./pathtest/Brewfile
 
   _common:
     steps:
