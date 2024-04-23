@@ -4,7 +4,7 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 workflows:
   test_install:
     envs:
-    - PACKAGES: "fswatch"
+    - PACKAGES: fswatch
     - OPTIONS: ""
     - UPGRADE: "no"
     - CACHE_ENABLED: "no"
@@ -13,7 +13,7 @@ workflows:
 
   test_upgrade:
     envs:
-    - PACKAGES: "fswatch"
+    - PACKAGES: fswatch
     - OPTIONS: ""
     - UPGRADE: "yes"
     - CACHE_ENABLED: "no"
@@ -22,13 +22,13 @@ workflows:
 
   test_cache:
     envs:
-    - PACKAGES: "fswatch"
+    - PACKAGES: fswatch
     - OPTIONS: ""
     - UPGRADE: "yes"
     - CACHE_ENABLED: "yes"
     after_run:
     - _common
-  
+
   test_bundle:
     before_run:
     - _change_workdir
@@ -60,7 +60,7 @@ workflows:
         inputs:
         - use_brewfile: "yes"
         - brewfile_path: "./pathtest/Brewfile"
-  
+
   _common:
     steps:
     - path::./:
@@ -71,7 +71,7 @@ workflows:
         - upgrade: $UPGRADE
         - cache_enabled: $CACHE_ENABLED
         - verbose_log: "yes"
-  
+
   _change_workdir:
     steps:
     - change-workdir:
