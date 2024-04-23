@@ -1,24 +1,24 @@
 title: Brew install
 summary: Install or upgrade dependencies with Homebrew.
 description: |-
-  Install or upgrade dependencies using Homebrew, a package manager for MacOS. 
+  Install or upgrade dependencies using Homebrew, a package manager for MacOS.
 
-  ### Configuring the Step 
+  ### Configuring the Step
 
   Homebrew defines the available packages as formulae. Our Step needs the name of the Homebrew formulae you want to use, either specified as a step input, or from a Brewfile in the project's source.
 
   To specify formulae in the step configuration
 
-  1. In the **Formula name** input, put the name of the formula you want to download. 
+  1. In the **Formula name** input, put the name of the formula you want to download.
   1. In the **Upgrade formula?** input, set the default behavior for previously installed packages. If the input is set to `yes`, the Step will call `brew reinstall` to upgrade them to the latest version.
-  1. In the **Brew install/reinstall options** input, you can set additional flags for the `brew install` or `brew reinstall` commands. 
+  1. In the **Brew install/reinstall options** input, you can set additional flags for the `brew install` or `brew reinstall` commands.
 
   For the possible options, see [Homebrew's documentation](https://docs.brew.sh/Manpage#install-options-formulacask).
 
   Alternatively you can install formulae using a Brewfile
 
   1. Add a `Brewfile` to the root of the project's source. For the format of the Brewfile, see the [Homebrew Bundle documentation](https://github.com/Homebrew/homebrew-bundle#usage)
-  1. Set the **Use a Brewfile to install packages?** input to "yes". 
+  1. Set the **Use a Brewfile to install packages?** input to "yes".
   1. (optional) Set the **Path to the Brewfile** input if it is not in the root of the project's source
 
   ### Useful links
@@ -26,7 +26,7 @@ description: |-
   - [Homebrew documentation](https://docs.brew.sh/Manpage)
   - [Caching Homebrew installers](https://devcenter.bitrise.io/builds/caching/caching-homebrew-installers/)
 
-  ### Related Steps 
+  ### Related Steps
 
   - [Run yarn command](https://www.bitrise.io/integrations/steps/yarn)
   - [Run npm command](https://www.bitrise.io/integrations/steps/npm)
