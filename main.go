@@ -41,6 +41,10 @@ func cmdArgs(options, packages string, upgrade, verboseLog bool) (args []string)
 		args = append(args, "-v")
 	}
 
+	if !strings.Contains(options, "--display-times") {
+		args = append(args, "--display-times")
+	}
+
 	if options != "" {
 		o, err := shellquote.Split(options)
 		if err != nil {
@@ -94,7 +98,6 @@ func collectCache() error {
 	brewCache.IncludePath(brewCachePth)
 	if err := brewCache.Commit(); err != nil {
 		return fmt.Errorf("failed to commit cache paths, error: %s", err)
-
 	}
 	return nil
 }
@@ -104,7 +107,7 @@ func cleanCache() error {
 
 	log.Donef("$ %s", cmd.PrintableCommandArgs())
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to clean homebrew chache directory, error: %s", err)
+		return fmt.Errorf("failed to clean homebrew cache directory, error: %s", err)
 	}
 	return nil
 }

@@ -45,8 +45,11 @@ toolkit:
 inputs:
   - packages:
     opts:
-      title: "Formula name"
-      summary: "Name of the formula to install/reinstall. Must be specified when `use_brewfile` is not `yes`"
+      title: Formulas to install
+      description: |-
+        Name of the formulas to install. Multiple formulas can be specified by separating them with a space, e.g. `git-lfs sqlite pipx`
+        
+        This input must be specified when `use_brewfile` is `no`
       is_required: no
   - upgrade: "yes"
     opts:
