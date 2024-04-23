@@ -38,6 +38,14 @@ support_url: https://github.com/bitrise-steplib/steps-brew-install/issues
 type_tags:
 - installer
 
+project_type_tags:
+- ios
+- macos
+- cordova
+- ionic
+- react-native
+- flutter
+
 toolkit:
   go:
     package_name: github.com/bitrise-steplib/steps-brew-install
