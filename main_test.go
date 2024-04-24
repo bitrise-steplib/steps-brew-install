@@ -15,7 +15,7 @@ func Test_cmdArgs(t *testing.T) {
 		verboseLog := false
 
 		args := cmdArgs(options, packages, upgrade, verboseLog)
-		require.Equal(t, []string{"install", "go"}, args)
+		require.Equal(t, []string{"install", "--display-times", "go"}, args)
 	}
 
 	t.Log("Create args for: upgrade go")
@@ -26,7 +26,7 @@ func Test_cmdArgs(t *testing.T) {
 		verboseLog := false
 
 		args := cmdArgs(options, packages, upgrade, verboseLog)
-		require.Equal(t, []string{"reinstall", "go"}, args)
+		require.Equal(t, []string{"reinstall", "--display-times", "go"}, args)
 	}
 
 	t.Log("Create args with verbose log")
@@ -37,7 +37,7 @@ func Test_cmdArgs(t *testing.T) {
 		verboseLog := true
 
 		args := cmdArgs(options, packages, upgrade, verboseLog)
-		require.Equal(t, []string{"install", "-v", "go"}, args)
+		require.Equal(t, []string{"install", "-v", "--display-times", "go"}, args)
 	}
 
 	t.Log("Create args with verbose option")
@@ -48,7 +48,7 @@ func Test_cmdArgs(t *testing.T) {
 		verboseLog := true
 
 		args := cmdArgs(options, packages, upgrade, verboseLog)
-		require.Equal(t, []string{"install", "--verbose", "go"}, args)
+		require.Equal(t, []string{"install", "--display-times", "--verbose", "go"}, args)
 	}
 
 	t.Log("Create args with options")
@@ -59,7 +59,7 @@ func Test_cmdArgs(t *testing.T) {
 		verboseLog := false
 
 		args := cmdArgs(options, packages, upgrade, verboseLog)
-		require.Equal(t, []string{"install", "option_1", "option_2", "go"}, args)
+		require.Equal(t, []string{"install", "--display-times", "option_1", "option_2", "go"}, args)
 	}
 }
 
