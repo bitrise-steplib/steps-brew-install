@@ -7,6 +7,7 @@ workflows:
     - PACKAGES: curl
     - OPTIONS: ""
     - UPGRADE: "no"
+    - UPGRADE_DEPENDENTS: "no"
     - CACHE_ENABLED: "no"
     after_run:
     - _common
@@ -26,6 +27,7 @@ workflows:
     - PACKAGES: curl
     - OPTIONS: ""
     - UPGRADE: "yes"
+    - UPGRADE_DEPENDENTS: "no"
     - CACHE_ENABLED: "no"
     after_run:
     - _common
@@ -35,6 +37,7 @@ workflows:
     - PACKAGES: curl
     - OPTIONS: ""
     - UPGRADE: "yes"
+    - UPGRADE_DEPENDENTS: "no"
     - CACHE_ENABLED: "yes"
     after_run:
     - _common
