@@ -132,9 +132,10 @@ func main() {
 	extraEnvs := make(map[string]string)
 	var noDependentsCheck string
 	if cfg.UpgradeDependents {
-		noDependentsCheck = "false"
+		// Need to use `0`, `false` is parsed as `true`
+		noDependentsCheck = "0"
 	} else {
-		noDependentsCheck = "true"
+		noDependentsCheck = "1"
 	}
 	extraEnvs["HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK"] = noDependentsCheck
 	extraEnvs["HOMEBREW_COLOR"] = "true" // Gets disabled on non-TTY outputs, but we can handle it

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
 	"github.com/bitrise-io/go-utils/v2/log"
@@ -39,7 +41,8 @@ func (p brewConfigPrinter) printBrewConfig(envOverrides map[string]string) {
 func (p brewConfigPrinter) printEnv(env string, envOverrides map[string]string) {
 	var value string
 
-	if override, ok := envOverrides[env]; ok {
+	override, hasOverride := envOverrides[env]
+	if hasOverride {
 		value = override
 	} else {
 		value = p.envRepo.Get(env)
@@ -47,6 +50,8 @@ func (p brewConfigPrinter) printEnv(env string, envOverrides map[string]string) 
 
 	if value == "" {
 		value = "<unset>"
+	} else if hasOverride {
+		value = fmt.Sprintf("%s (override by step input)", colorstring.Cyan(value))
 	} else {
 		value = colorstring.Cyan(value)
 	}
