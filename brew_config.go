@@ -30,7 +30,7 @@ func (p brewConfigPrinter) printBrewConfig() {
 
 	versionStr, err := p.cmdFactory.Create("brew", []string{"--version"}, nil).RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		p.logger.Warnf("Homebrew version: %s", err)
+		p.logger.Warnf("Failed to query Homebrew version: %s", err)
 	} else {
 		p.logger.Printf("Version: %s", colorstring.Cyan(versionStr))
 	}
