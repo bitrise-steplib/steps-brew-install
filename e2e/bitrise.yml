@@ -16,7 +16,7 @@ workflows:
     envs:
     - PACKAGES: curl
     - OPTIONS: ""
-    - UPGRADE: "no"
+    - UPGRADE: "yes"
     - UPGRADE_DEPENDENTS: "yes"
     - CACHE_ENABLED: "no"
     after_run:
@@ -84,7 +84,6 @@ workflows:
         - upgrade: $UPGRADE
         - upgrade_dependents: $UPGRADE_DEPENDENTS
         - cache_enabled: $CACHE_ENABLED
-        - verbose_log: "yes"
 
   _change_workdir:
     steps:

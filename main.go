@@ -129,18 +129,21 @@ func main() {
 	stepconf.Print(cfg)
 	logger.Println()
 
+	extraEnvs := make(map[string]string)
+	var noDependentsCheck string
+	if cfg.UpgradeDependents {
+		noDependentsCheck = "false"
+	} else {
+		noDependentsCheck = "true"
+	}
+	extraEnvs["HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK"] = noDependentsCheck
+	extraEnvs["HOMEBREW_COLOR"] = "true" // Gets disabled on non-TTY outputs, but we can handle it
+
 	configPrinter := brewConfigPrinter{cmdFactory, envRepo, logger}
-	configPrinter.printBrewConfig()
+	configPrinter.printBrewConfig(extraEnvs)
 	logger.Println()
 
 	logger.Infof("Run brew command")
-	
-	var extraEnvs []string
-	if cfg.UpgradeDependents {
-		extraEnvs = append(extraEnvs, "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=false")
-	} else {
-		extraEnvs = append(extraEnvs, "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=true")
-	}
 
 	if cfg.UseBrewfile {
 		args := brewFileArgs(cfg.Options, cfg.VerboseLog, cfg.BrewfilePath)
@@ -180,7 +183,7 @@ func main() {
 	}
 }
 
-func brewCommand(args []string, extraEnvs []string, setDefaultOutput bool) *command.Model {
+func brewCommand(args []string, extraEnvs map[string]string, setDefaultOutput bool) *command.Model {
 	brewPrefix, err := command.New("brew", "--prefix").RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
 		logger.Warnf("Failed to get brew prefix: %s\n%s", err, brewPrefix)
@@ -206,7 +209,11 @@ func brewCommand(args []string, extraEnvs []string, setDefaultOutput bool) *comm
 		effectiveArgs = args
 	}
 
-	finalEnvs := append(os.Environ(), extraEnvs...)
+	var envStrings []string
+	for k, v := range extraEnvs {
+		envStrings = append(envStrings, fmt.Sprintf("%s=%s", k, v))
+	}
+	finalEnvs := append(os.Environ(), envStrings...)
 
 	if setDefaultOutput {
 		return command.New(effectiveCmd, effectiveArgs...).SetStdout(os.Stdout).SetStderr(os.Stderr).SetEnvs(finalEnvs...)

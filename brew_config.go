@@ -13,7 +13,7 @@ type brewConfigPrinter struct {
 	logger     log.Logger
 }
 
-func (p brewConfigPrinter) printBrewConfig() {
+func (p brewConfigPrinter) printBrewConfig(envOverrides map[string]string) {
 	p.logger.Infof("Homebrew configuration:")
 
 	for _, env := range []string{
@@ -23,7 +23,7 @@ func (p brewConfigPrinter) printBrewConfig() {
 		"HOMEBREW_NO_AUTO_UPDATE",
 		"HOMEBREW_CORE_GIT_REMOTE",
 	} {
-		p.printEnv(env)
+		p.printEnv(env, envOverrides)
 	}
 
 	p.logger.Printf("%s: Default values are documented at https://docs.brew.sh/Manpage#environment", colorstring.Yellow("Note"))
@@ -36,8 +36,15 @@ func (p brewConfigPrinter) printBrewConfig() {
 	}
 }
 
-func (p brewConfigPrinter) printEnv(env string) {
-	value := p.envRepo.Get(env)
+func (p brewConfigPrinter) printEnv(env string, envOverrides map[string]string) {
+	var value string
+
+	if override, ok := envOverrides[env]; ok {
+		value = override
+	} else {
+		value = p.envRepo.Get(env)
+	}
+
 	if value == "" {
 		value = "<unset>"
 	} else {
