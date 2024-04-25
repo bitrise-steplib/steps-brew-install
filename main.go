@@ -18,9 +18,10 @@ import (
 var logger = log.NewLogger()
 
 type Inputs struct {
-	Packages string `env:"packages"`
-	Options  string `env:"options"`
-	Upgrade  bool   `env:"upgrade,opt[yes,no]"`
+	Packages          string `env:"packages"`
+	Options           string `env:"options"`
+	Upgrade           bool   `env:"upgrade,opt[yes,no]"`
+	UpgradeDependents bool   `env:"upgrade_dependents,opt[yes,no]"`
 
 	UseBrewfile  bool   `env:"use_brewfile,opt[yes,no]"`
 	BrewfilePath string `env:"brewfile_path"`
@@ -89,7 +90,7 @@ func brewFileArgs(options string, verboseLog bool, path string) (args []string) 
 }
 
 func collectCache() error {
-	cmd := brewCommand([]string{"--cache"}, false)
+	cmd := brewCommand([]string{"--cache"}, nil, false)
 	logger.Debugf("$ %s", cmd.PrintableCommandArgs())
 
 	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
@@ -106,7 +107,7 @@ func collectCache() error {
 }
 
 func cleanCache() error {
-	cmd := brewCommand([]string{"cleanup"}, true)
+	cmd := brewCommand([]string{"cleanup"}, nil, true)
 
 	logger.Donef("$ %s", cmd.PrintableCommandArgs())
 	if err := cmd.Run(); err != nil {
@@ -133,9 +134,17 @@ func main() {
 	logger.Println()
 
 	logger.Infof("Run brew command")
+	
+	var extraEnvs []string
+	if cfg.UpgradeDependents {
+		extraEnvs = append(extraEnvs, "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=false")
+	} else {
+		extraEnvs = append(extraEnvs, "HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK=true")
+	}
+
 	if cfg.UseBrewfile {
 		args := brewFileArgs(cfg.Options, cfg.VerboseLog, cfg.BrewfilePath)
-		cmd := brewCommand(args, true)
+		cmd := brewCommand(args, extraEnvs, true)
 
 		logger.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
@@ -143,7 +152,7 @@ func main() {
 		}
 	} else {
 		args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
-		cmd := brewCommand(args, true)
+		cmd := brewCommand(args, extraEnvs, true)
 
 		logger.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
@@ -171,7 +180,7 @@ func main() {
 	}
 }
 
-func brewCommand(args []string, setDefaultOutput bool) *command.Model {
+func brewCommand(args []string, extraEnvs []string, setDefaultOutput bool) *command.Model {
 	brewPrefix, err := command.New("brew", "--prefix").RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
 		logger.Warnf("Failed to get brew prefix: %s\n%s", err, brewPrefix)
@@ -197,9 +206,11 @@ func brewCommand(args []string, setDefaultOutput bool) *command.Model {
 		effectiveArgs = args
 	}
 
+	finalEnvs := append(os.Environ(), extraEnvs...)
+
 	if setDefaultOutput {
-		return command.New(effectiveCmd, effectiveArgs...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+		return command.New(effectiveCmd, effectiveArgs...).SetStdout(os.Stdout).SetStderr(os.Stderr).SetEnvs(finalEnvs...)
 	}
 
-	return command.New(effectiveCmd, effectiveArgs...)
+	return command.New(effectiveCmd, effectiveArgs...).SetEnvs(finalEnvs...)
 }

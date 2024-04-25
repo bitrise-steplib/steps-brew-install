@@ -4,16 +4,26 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 workflows:
   test_install:
     envs:
-    - PACKAGES: fswatch
+    - PACKAGES: curl
     - OPTIONS: ""
     - UPGRADE: "no"
+    - CACHE_ENABLED: "no"
+    after_run:
+    - _common
+  
+  test_install_and_upgrade_dependents:
+    envs:
+    - PACKAGES: curl
+    - OPTIONS: ""
+    - UPGRADE: "no"
+    - UPGRADE_DEPENDENTS: "yes"
     - CACHE_ENABLED: "no"
     after_run:
     - _common
 
   test_upgrade:
     envs:
-    - PACKAGES: fswatch
+    - PACKAGES: curl
     - OPTIONS: ""
     - UPGRADE: "yes"
     - CACHE_ENABLED: "no"
@@ -22,7 +32,7 @@ workflows:
 
   test_cache:
     envs:
-    - PACKAGES: fswatch
+    - PACKAGES: curl
     - OPTIONS: ""
     - UPGRADE: "yes"
     - CACHE_ENABLED: "yes"
@@ -69,6 +79,7 @@ workflows:
         - packages: $PACKAGES
         - options: $OPTIONS
         - upgrade: $UPGRADE
+        - upgrade_dependents: $UPGRADE_DEPENDENTS
         - cache_enabled: $CACHE_ENABLED
         - verbose_log: "yes"
 
