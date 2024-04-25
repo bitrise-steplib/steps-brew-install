@@ -9,12 +9,15 @@ import (
 	"github.com/bitrise-io/go-steputils/stepconf"
 	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/command"
-	"github.com/bitrise-io/go-utils/log"
+	v2command "github.com/bitrise-io/go-utils/v2/command"
+	"github.com/bitrise-io/go-utils/v2/env"
+	"github.com/bitrise-io/go-utils/v2/log"
 	shellquote "github.com/kballard/go-shellquote"
 )
 
-// configs ...
-type configs struct {
+var logger = log.NewLogger()
+
+type Inputs struct {
 	Packages string `env:"packages"`
 	Options  string `env:"options"`
 	Upgrade  bool   `env:"upgrade,opt[yes,no]"`
@@ -27,7 +30,7 @@ type configs struct {
 }
 
 func fail(format string, v ...interface{}) {
-	log.Errorf(format, v...)
+	logger.Errorf(format, v...)
 	os.Exit(1)
 }
 
@@ -87,7 +90,7 @@ func brewFileArgs(options string, verboseLog bool, path string) (args []string) 
 
 func collectCache() error {
 	cmd := brewCommand([]string{"--cache"}, false)
-	log.Debugf("$ %s", cmd.PrintableCommandArgs())
+	logger.Debugf("$ %s", cmd.PrintableCommandArgs())
 
 	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
 	if err != nil {
@@ -105,7 +108,7 @@ func collectCache() error {
 func cleanCache() error {
 	cmd := brewCommand([]string{"cleanup"}, true)
 
-	log.Donef("$ %s", cmd.PrintableCommandArgs())
+	logger.Donef("$ %s", cmd.PrintableCommandArgs())
 	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("failed to clean homebrew cache directory, error: %s", err)
 	}
@@ -113,21 +116,28 @@ func cleanCache() error {
 }
 
 func main() {
-	var cfg configs
+	var cfg Inputs
 	if err := stepconf.Parse(&cfg); err != nil {
 		fail("Issue with input: %s", err)
 	}
 
-	stepconf.Print(cfg)
-	fmt.Println()
-	log.SetEnableDebugLog(cfg.VerboseLog)
+	logger.EnableDebugLog(cfg.VerboseLog)
+	envRepo := env.NewRepository()
+	cmdFactory := v2command.NewFactory(envRepo)
 
-	log.Infof("Run brew command")
+	stepconf.Print(cfg)
+	logger.Println()
+
+	configPrinter := brewConfigPrinter{cmdFactory, envRepo, logger}
+	configPrinter.printBrewConfig()
+	logger.Println()
+
+	logger.Infof("Run brew command")
 	if cfg.UseBrewfile {
 		args := brewFileArgs(cfg.Options, cfg.VerboseLog, cfg.BrewfilePath)
 		cmd := brewCommand(args, true)
 
-		log.Donef("$ %s", cmd.PrintableCommandArgs())
+		logger.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
 			fail("Can't install with Brewfile:  %s", err)
 		}
@@ -135,7 +145,7 @@ func main() {
 		args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
 		cmd := brewCommand(args, true)
 
-		log.Donef("$ %s", cmd.PrintableCommandArgs())
+		logger.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
 			fail("Can't install formulas:  %s", err)
 		}
@@ -144,18 +154,18 @@ func main() {
 	// Collecting caches
 	if cfg.CacheEnabled {
 		fmt.Println()
-		log.Infof("Collecting homebrew cache")
+		logger.Infof("Collecting homebrew cache")
 
 		if err := collectCache(); err != nil {
-			log.Warnf("Cache collection skipped: %s", err)
+			logger.Warnf("Cache collection skipped: %s", err)
 		} else {
-			log.Donef("Cache path added to $BITRISE_CACHE_INCLUDE_PATHS")
-			log.Printf("Add '%s' step to upload the collected cache for the next build.", colorstring.Yellow("Bitrise.io Cache:Push"))
+			logger.Donef("Cache path added to $BITRISE_CACHE_INCLUDE_PATHS")
+			logger.Printf("Add '%s' step to upload the collected cache for the next build.", colorstring.Yellow("Bitrise.io Cache:Push"))
 
 			fmt.Println()
-			log.Infof("Cleanup homebrew cache")
+			logger.Infof("Cleanup homebrew cache")
 			if err := cleanCache(); err != nil {
-				log.Warnf("Cache cleanup skipped: %s", err)
+				logger.Warnf("Cache cleanup skipped: %s", err)
 			}
 		}
 	}
@@ -164,15 +174,15 @@ func main() {
 func brewCommand(args []string, setDefaultOutput bool) *command.Model {
 	brewPrefix, err := command.New("brew", "--prefix").RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		log.Warnf("Failed to get brew prefix: %s\n%s", err, brewPrefix)
+		logger.Warnf("Failed to get brew prefix: %s\n%s", err, brewPrefix)
 	}
-	log.Debugf("Brew prefix: %s", brewPrefix)
+	logger.Debugf("Brew prefix: %s", brewPrefix)
 
 	activeArch, err := command.New("arch").RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
-		log.Warnf("Failed to get active arch: %s\n%s", err, activeArch)
+		logger.Warnf("Failed to get active arch: %s\n%s", err, activeArch)
 	}
-	log.Debugf("Active arch: %s", activeArch)
+	logger.Debugf("Active arch: %s", activeArch)
 
 	var effectiveCmd string
 	var effectiveArgs []string
