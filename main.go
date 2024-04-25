@@ -132,8 +132,8 @@ func main() {
 	extraEnvs := make(map[string]string)
 	var noDependentsCheck string
 	if cfg.UpgradeDependents {
-		// Need to use `0`, `false` is parsed as `true`
-		noDependentsCheck = "0"
+		// Need to use the empty string, anything else is parsed as `true`, including "0" and "false"
+		noDependentsCheck = ""
 	} else {
 		noDependentsCheck = "1"
 	}
