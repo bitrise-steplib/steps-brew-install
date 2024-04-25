@@ -10,7 +10,7 @@ workflows:
     - CACHE_ENABLED: "no"
     after_run:
     - _common
-  
+
   test_install_and_upgrade_dependents:
     envs:
     - PACKAGES: curl

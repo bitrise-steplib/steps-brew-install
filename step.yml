@@ -74,9 +74,9 @@ inputs:
     title: Upgrade dependent packages
     description: |
       If set to `no`, the step won't upgrade other **installed packages** that depend on the package to be installed.
-      
+
       This helps predictability and install times, but sometimes could cause problems with existing installed packages if they are not compatible the newly installed package (Homebrew is an evergreen package manager by design). More information is available [here](https://docs.brew.sh/FAQ#why-does-brew-upgrade-formula-or-brew-install-formula-also-upgrade-a-bunch-of-other-stuff) and [here](HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK).
-      
+
       If you experience a broken package, set this input to `yes`.
 
       This input controls the `HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK` env var.
