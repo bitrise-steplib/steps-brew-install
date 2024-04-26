@@ -3,14 +3,11 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
   test_install:
-    envs:
-    - PACKAGES: curl
-    - OPTIONS: ""
-    - UPGRADE: "no"
-    - UPGRADE_DEPENDENTS: "no"
-    - CACHE_ENABLED: "no"
-    after_run:
-    - _common
+    steps:
+    - path::./:
+        title: Test default behavior
+        inputs:
+        - packages: curl
 
   test_install_and_upgrade_dependents:
     envs:
@@ -19,8 +16,13 @@ workflows:
     - UPGRADE: "yes"
     - UPGRADE_DEPENDENTS: "yes"
     - CACHE_ENABLED: "no"
-    after_run:
-    - _common
+    steps:
+    - path::./:
+        title: Install and upgrade dependents
+        inputs:
+        - packages: curl
+        - upgrade: "yes"
+        - upgrade_dependents: "yes"
 
   test_upgrade:
     envs:
@@ -29,18 +31,21 @@ workflows:
     - UPGRADE: "yes"
     - UPGRADE_DEPENDENTS: "no"
     - CACHE_ENABLED: "no"
-    after_run:
-    - _common
+    steps:
+    - path::./:
+        title: Upgrade
+        inputs:
+        - packages: curl
+        - upgrade: "yes"
 
   test_cache:
-    envs:
-    - PACKAGES: curl
-    - OPTIONS: ""
-    - UPGRADE: "yes"
-    - UPGRADE_DEPENDENTS: "no"
-    - CACHE_ENABLED: "yes"
-    after_run:
-    - _common
+    steps:
+    - path::./:
+        title: Test cache
+        inputs:
+        - packages: curl
+        - upgrade: "yes"
+        - cache_enabled: "yes"
 
   test_bundle:
     before_run:
@@ -73,17 +78,6 @@ workflows:
         inputs:
         - use_brewfile: "yes"
         - brewfile_path: ./pathtest/Brewfile
-
-  _common:
-    steps:
-    - path::./:
-        title: Run step
-        inputs:
-        - packages: $PACKAGES
-        - options: $OPTIONS
-        - upgrade: $UPGRADE
-        - upgrade_dependents: $UPGRADE_DEPENDENTS
-        - cache_enabled: $CACHE_ENABLED
 
   _change_workdir:
     steps:
