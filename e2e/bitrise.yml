@@ -17,7 +17,7 @@ workflows:
         - packages: curl
         - upgrade: "yes"
         - upgrade_dependents: "yes"
-  
+
   test_install_and_upgrade_dependents_env_var:
     envs:
     # Stacks will soon define this env var by default.
