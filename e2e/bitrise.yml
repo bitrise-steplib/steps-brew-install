@@ -10,12 +10,6 @@ workflows:
         - packages: curl
 
   test_install_and_upgrade_dependents:
-    envs:
-    - PACKAGES: curl
-    - OPTIONS: ""
-    - UPGRADE: "yes"
-    - UPGRADE_DEPENDENTS: "yes"
-    - CACHE_ENABLED: "no"
     steps:
     - path::./:
         title: Install and upgrade dependents
@@ -23,14 +17,22 @@ workflows:
         - packages: curl
         - upgrade: "yes"
         - upgrade_dependents: "yes"
+  
+  test_install_and_upgrade_dependents_env_var:
+    envs:
+    # Stacks will soon define this env var by default.
+    # Homebrew doesn't parse `HOMEBREW_ENV=0` style envs correctly,
+    # so this test is here to verify that the step can handle it.
+    - HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
+    steps:
+    - path::./:
+        title: Install and upgrade dependents (env var is set)
+        inputs:
+        - packages: curl
+        - upgrade: "yes"
+        - upgrade_dependents: "yes"
 
   test_upgrade:
-    envs:
-    - PACKAGES: curl
-    - OPTIONS: ""
-    - UPGRADE: "yes"
-    - UPGRADE_DEPENDENTS: "no"
-    - CACHE_ENABLED: "no"
     steps:
     - path::./:
         title: Upgrade
