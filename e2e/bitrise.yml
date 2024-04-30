@@ -40,15 +40,6 @@ workflows:
         - packages: curl
         - upgrade: "yes"
 
-  test_cache:
-    steps:
-    - path::./:
-        title: Test cache
-        inputs:
-        - packages: curl
-        - upgrade: "yes"
-        - cache_enabled: "yes"
-
   test_bundle:
     before_run:
     - _change_workdir

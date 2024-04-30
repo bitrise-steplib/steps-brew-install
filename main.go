@@ -5,9 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/bitrise-io/go-steputils/cache"
 	"github.com/bitrise-io/go-steputils/stepconf"
-	"github.com/bitrise-io/go-utils/colorstring"
 	"github.com/bitrise-io/go-utils/command"
 	v2command "github.com/bitrise-io/go-utils/v2/command"
 	"github.com/bitrise-io/go-utils/v2/env"
@@ -25,7 +23,6 @@ type Inputs struct {
 
 	UseBrewfile  bool   `env:"use_brewfile,opt[yes,no]"`
 	BrewfilePath string `env:"brewfile_path"`
-	CacheEnabled bool   `env:"cache_enabled,opt[yes,no]"`
 
 	VerboseLog bool `env:"verbose_log,opt[yes,no]"`
 }
@@ -89,33 +86,6 @@ func brewFileArgs(options string, verboseLog bool, path string) (args []string) 
 	return
 }
 
-func collectCache() error {
-	cmd := brewCommand([]string{"--cache"}, nil, false)
-	logger.Debugf("$ %s", cmd.PrintableCommandArgs())
-
-	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
-	if err != nil {
-		return fmt.Errorf("failed to find homebrew chache directory, error: %s", err)
-	}
-
-	brewCache := cache.New()
-	brewCache.IncludePath(brewCachePth)
-	if err := brewCache.Commit(); err != nil {
-		return fmt.Errorf("failed to commit cache paths, error: %s", err)
-	}
-	return nil
-}
-
-func cleanCache() error {
-	cmd := brewCommand([]string{"cleanup"}, nil, true)
-
-	logger.Donef("$ %s", cmd.PrintableCommandArgs())
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("failed to clean homebrew cache directory, error: %s", err)
-	}
-	return nil
-}
-
 func main() {
 	var cfg Inputs
 	if err := stepconf.Parse(&cfg); err != nil {
@@ -161,25 +131,6 @@ func main() {
 		logger.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
 			fail("Can't install formulas:  %s", err)
-		}
-	}
-
-	// Collecting caches
-	if cfg.CacheEnabled {
-		fmt.Println()
-		logger.Infof("Collecting homebrew cache")
-
-		if err := collectCache(); err != nil {
-			logger.Warnf("Cache collection skipped: %s", err)
-		} else {
-			logger.Donef("Cache path added to $BITRISE_CACHE_INCLUDE_PATHS")
-			logger.Printf("Add '%s' step to upload the collected cache for the next build.", colorstring.Yellow("Bitrise.io Cache:Push"))
-
-			fmt.Println()
-			logger.Infof("Cleanup homebrew cache")
-			if err := cleanCache(); err != nil {
-				logger.Warnf("Cache cleanup skipped: %s", err)
-			}
 		}
 	}
 }

@@ -24,7 +24,6 @@ description: |-
   ### Useful links
 
   - [Homebrew documentation](https://docs.brew.sh/Manpage)
-  - [Caching Homebrew installers](https://devcenter.bitrise.io/builds/caching/caching-homebrew-installers/)
 
   ### Related Steps
 
@@ -107,16 +106,6 @@ inputs:
     description: |
       Flags to pass to the brew install/reinstall command.
       `brew install/reinstall [options] [packages]`
-- cache_enabled: "no"
-  opts:
-    title: Enable cache?
-    summary: Should the step collect files to be cached?
-    description: |
-      If set to `"yes"` the contents of `~/Library/Caches/Homebrew` directory will be cached.
-    is_required: true
-    value_options:
-    - "yes"
-    - "no"
 - verbose_log: "no"
   opts:
     title: Enable verbose logging?
