@@ -214,6 +214,8 @@ func brewCommand(args []string, extraEnvs map[string]string, setDefaultOutput bo
 	for k, v := range extraEnvs {
 		envStrings = append(envStrings, fmt.Sprintf("%s=%s", k, v))
 	}
+	// Go `cmd.Env` implementation detail: duplicate env vars are handled by applying the last one,
+	// so this is fine.
 	finalEnvs := append(os.Environ(), envStrings...)
 
 	if setDefaultOutput {

@@ -48,10 +48,10 @@ func (p brewConfigPrinter) printEnv(env string, envOverrides map[string]string) 
 		value = p.envRepo.Get(env)
 	}
 
-	if value == "" {
-		value = "<unset>"
-	} else if hasOverride {
+	if hasOverride {
 		value = fmt.Sprintf("%s (override by step input)", colorstring.Cyan(value))
+	} else if value == "" {
+		value = "<unset>"
 	} else {
 		value = colorstring.Cyan(value)
 	}
