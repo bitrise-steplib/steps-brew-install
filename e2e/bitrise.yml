@@ -3,31 +3,51 @@ default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
   test_install:
+    steps:
+    - path::./:
+        title: Test default behavior
+        inputs:
+        - packages: curl
+
+  test_install_and_upgrade_dependents:
+    steps:
+    - path::./:
+        title: Install and upgrade dependents
+        inputs:
+        - packages: curl
+        - upgrade: "yes"
+        - upgrade_dependents: "yes"
+
+  test_install_and_upgrade_dependents_env_var:
     envs:
-    - PACKAGES: fswatch
-    - OPTIONS: ""
-    - UPGRADE: "no"
-    - CACHE_ENABLED: "no"
-    after_run:
-    - _common
+    # Stacks will soon define this env var by default.
+    # Homebrew doesn't parse `HOMEBREW_ENV=0` style envs correctly,
+    # so this test is here to verify that the step can handle it.
+    - HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK: "1"
+    steps:
+    - path::./:
+        title: Install and upgrade dependents (env var is set)
+        inputs:
+        - packages: curl
+        - upgrade: "yes"
+        - upgrade_dependents: "yes"
 
   test_upgrade:
-    envs:
-    - PACKAGES: fswatch
-    - OPTIONS: ""
-    - UPGRADE: "yes"
-    - CACHE_ENABLED: "no"
-    after_run:
-    - _common
+    steps:
+    - path::./:
+        title: Upgrade
+        inputs:
+        - packages: curl
+        - upgrade: "yes"
 
   test_cache:
-    envs:
-    - PACKAGES: fswatch
-    - OPTIONS: ""
-    - UPGRADE: "yes"
-    - CACHE_ENABLED: "yes"
-    after_run:
-    - _common
+    steps:
+    - path::./:
+        title: Test cache
+        inputs:
+        - packages: curl
+        - upgrade: "yes"
+        - cache_enabled: "yes"
 
   test_bundle:
     before_run:
@@ -60,17 +80,6 @@ workflows:
         inputs:
         - use_brewfile: "yes"
         - brewfile_path: ./pathtest/Brewfile
-
-  _common:
-    steps:
-    - path::./:
-        title: Run step
-        inputs:
-        - packages: $PACKAGES
-        - options: $OPTIONS
-        - upgrade: $UPGRADE
-        - cache_enabled: $CACHE_ENABLED
-        - verbose_log: "yes"
 
   _change_workdir:
     steps:

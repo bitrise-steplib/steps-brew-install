@@ -18,9 +18,10 @@ import (
 var logger = log.NewLogger()
 
 type Inputs struct {
-	Packages string `env:"packages"`
-	Options  string `env:"options"`
-	Upgrade  bool   `env:"upgrade,opt[yes,no]"`
+	Packages          string `env:"packages"`
+	Options           string `env:"options"`
+	Upgrade           bool   `env:"upgrade,opt[yes,no]"`
+	UpgradeDependents bool   `env:"upgrade_dependents,opt[yes,no]"`
 
 	UseBrewfile  bool   `env:"use_brewfile,opt[yes,no]"`
 	BrewfilePath string `env:"brewfile_path"`
@@ -89,7 +90,7 @@ func brewFileArgs(options string, verboseLog bool, path string) (args []string) 
 }
 
 func collectCache() error {
-	cmd := brewCommand([]string{"--cache"}, false)
+	cmd := brewCommand([]string{"--cache"}, nil, false)
 	logger.Debugf("$ %s", cmd.PrintableCommandArgs())
 
 	brewCachePth, err := cmd.RunAndReturnTrimmedOutput()
@@ -106,7 +107,7 @@ func collectCache() error {
 }
 
 func cleanCache() error {
-	cmd := brewCommand([]string{"cleanup"}, true)
+	cmd := brewCommand([]string{"cleanup"}, nil, true)
 
 	logger.Donef("$ %s", cmd.PrintableCommandArgs())
 	if err := cmd.Run(); err != nil {
@@ -128,14 +129,26 @@ func main() {
 	stepconf.Print(cfg)
 	logger.Println()
 
+	extraEnvs := make(map[string]string)
+	var noDependentsCheck string
+	if cfg.UpgradeDependents {
+		// Need to use the empty string, anything else is parsed as `true`, including "0" and "false"
+		noDependentsCheck = ""
+	} else {
+		noDependentsCheck = "1"
+	}
+	extraEnvs["HOMEBREW_NO_INSTALLED_DEPENDENTS_CHECK"] = noDependentsCheck
+	extraEnvs["HOMEBREW_COLOR"] = "true" // Gets disabled on non-TTY outputs, but we can handle it
+
 	configPrinter := brewConfigPrinter{cmdFactory, envRepo, logger}
-	configPrinter.printBrewConfig()
+	configPrinter.printBrewConfig(extraEnvs)
 	logger.Println()
 
 	logger.Infof("Run brew command")
+
 	if cfg.UseBrewfile {
 		args := brewFileArgs(cfg.Options, cfg.VerboseLog, cfg.BrewfilePath)
-		cmd := brewCommand(args, true)
+		cmd := brewCommand(args, extraEnvs, true)
 
 		logger.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
@@ -143,7 +156,7 @@ func main() {
 		}
 	} else {
 		args := cmdArgs(cfg.Options, cfg.Packages, cfg.Upgrade, cfg.VerboseLog)
-		cmd := brewCommand(args, true)
+		cmd := brewCommand(args, extraEnvs, true)
 
 		logger.Donef("$ %s", cmd.PrintableCommandArgs())
 		if err := cmd.Run(); err != nil {
@@ -171,7 +184,7 @@ func main() {
 	}
 }
 
-func brewCommand(args []string, setDefaultOutput bool) *command.Model {
+func brewCommand(args []string, extraEnvs map[string]string, setDefaultOutput bool) *command.Model {
 	brewPrefix, err := command.New("brew", "--prefix").RunAndReturnTrimmedCombinedOutput()
 	if err != nil {
 		logger.Warnf("Failed to get brew prefix: %s\n%s", err, brewPrefix)
@@ -197,9 +210,17 @@ func brewCommand(args []string, setDefaultOutput bool) *command.Model {
 		effectiveArgs = args
 	}
 
+	var envStrings []string
+	for k, v := range extraEnvs {
+		envStrings = append(envStrings, fmt.Sprintf("%s=%s", k, v))
+	}
+	// Go `cmd.Env` implementation detail: duplicate env vars are handled by applying the last one,
+	// so this is fine.
+	finalEnvs := append(os.Environ(), envStrings...)
+
 	if setDefaultOutput {
-		return command.New(effectiveCmd, effectiveArgs...).SetStdout(os.Stdout).SetStderr(os.Stderr)
+		return command.New(effectiveCmd, effectiveArgs...).SetStdout(os.Stdout).SetStderr(os.Stderr).SetEnvs(finalEnvs...)
 	}
 
-	return command.New(effectiveCmd, effectiveArgs...)
+	return command.New(effectiveCmd, effectiveArgs...).SetEnvs(finalEnvs...)
 }
