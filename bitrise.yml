@@ -2,10 +2,6 @@ format_version: "11"
 default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
 
 workflows:
-  generate_readme:
-    steps:
-    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: { }
-
   check:
     steps:
     - git::https://github.com/bitrise-steplib/steps-check.git: { }
@@ -15,3 +11,7 @@ workflows:
     - git::https://github.com/bitrise-steplib/steps-check.git:
         inputs:
         - workflow: e2e
+
+  generate_readme:
+    steps:
+    - git::https://github.com/bitrise-steplib/steps-readme-generator.git@main: { }
